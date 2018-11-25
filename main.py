@@ -5,9 +5,11 @@ from sklearn.cluster import AgglomerativeClustering, KMeans
 from Kcluster import FuzzyKMeans
 import Files
 import pandas as pd
+
 import numpy as np
 import seaborn as sns
 import matplotlib.pylab as plt
+
 
 
 def print_clusters(X,labels):
@@ -39,7 +41,9 @@ def clean_less_than_k(df: pd.DataFrame, value_threshold: int, rowcount_percentag
     row_count = df.shape[0]
     row_threshold = rowcount_percentage*row_count
     #mask = pd.Series([count_values_bigger_than_k(s, value_threshold)>row_threshold for s in df.values])
+
     mask = pd.Series([count_values_bigger_than_k(s, value_threshold) > 16 for s in df.values],index=df.index)
+
     return df[mask]
 
 
@@ -51,6 +55,7 @@ if __name__ == '__main__':
     X = X.set_index('Unnamed: 0')
     X = clean_null_figures(X)
     X = X.applymap(log)
+
     X = clean_less_than_k(X, 3, 0.005)
 
     X_np:np = np.asarray(X)
@@ -96,3 +101,4 @@ In [5]: result = pd.concat(frames)
     centroids = kmeans.cluster_centers_
     labels = kmeans.labels_
 '''
+
