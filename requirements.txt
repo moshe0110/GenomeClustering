@@ -1,5 +1,0 @@
-pandas==0.23.4
-xlrd
-scikit-learn
-scipy.stats
-scipy.stats.pearsonr

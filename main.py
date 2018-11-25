@@ -42,43 +42,43 @@ def clean_less_than_k(df: pd.DataFrame, value_threshold: int, rowcount_percentag
     row_threshold = rowcount_percentage*row_count
     #mask = pd.Series([count_values_bigger_than_k(s, value_threshold)>row_threshold for s in df.values])
 
-    mask = pd.Series([count_values_bigger_than_k(s, value_threshold) > 16 for s in df.values],index=df.index)
+    mask = pd.Series([count_values_bigger_than_k(s, value_threshold) > row_threshold for s in df.values],index=df.index)
 
     return df[mask]
 
+def plot_heatmap_sorted(clustering: list, X):
+    sorted_X = pd.DataFrame()
+    for i in range(0, NUM_OF_CLUSTERS):
+        indicators = list(map(lambda j: j == i, clustering))
+        cluster_i: list = X[indicators]
+        sorted_X = pd.concat([sorted_X, cluster_i])
 
+    fig, ax = plt.subplots(figsize=(10, 15))
+    sns.heatmap(sorted_X, ax=ax)
+    plt.show()
 if __name__ == '__main__':
-    NUM_OF_CLUSTERS=7
-
+    NUM_OF_CLUSTERS=[5,7,11]
+    CLEANING_PERCENTAGES =  [0.00075,0.001,0.0015]
 
     X: pd.DataFrame = pd.read_csv(open(Files.gold_set, 'rb'))
     X = X.set_index('Unnamed: 0')
     X = clean_null_figures(X)
     X = X.applymap(log)
+    for clean_percentage in CLEANING_PERCENTAGES:
+        for num_of_clusters in NUM_OF_CLUSTERS:
+            print('starting run')
+            print(f'num of clusters: {num_of_clusters}')
+            print(f'clean_percentage: {clean_percentage}')
+            X = clean_less_than_k(X, 3, clean_percentage)
+            X_np:np = np.asarray(X)
+            X_np_corr:np = np.corrcoef(X_np)
+            X_computed_affinity:np = np.asanyarray([np.array([1 - xi for xi in x]) for x in X_np_corr])
+            print('started ')
+            clustering_complete = AgglomerativeClustering(n_clusters=num_of_clusters, affinity='precomputed', linkage='complete').fit_predict(X_computed_affinity)
 
-    X = clean_less_than_k(X, 3, 0.005)
-
-    X_np:np = np.asarray(X)
-    X_np_corr:np = np.corrcoef(X_np)
-    X_computed_affinity:np = np.asanyarray([np.array([1 - xi for xi in x]) for x in X_np_corr])
-    print('finished creating corr matrix')
-    clustering = AgglomerativeClustering(n_clusters=NUM_OF_CLUSTERS, affinity='precomputed', linkage='complete').fit_predict(X_computed_affinity)
-    #currently complete looking the best
-    print('finished clustering')
+            print('finished clustering')
 
 
-    #print_clusters(X,clustering)
-    #indicators:[] = [[[False]*len(clustering)]*NUM_OF_CLUSTERS]
-    #todo maybe redundent calc ^
-    sorted_X=pd.DataFrame()
-    for i in range(0, NUM_OF_CLUSTERS):
-        indicators = list(map(lambda j:j == i, clustering))
-        cluster_i:list = X[indicators]
-        sorted_X = pd.concat([sorted_X,cluster_i])
-
-    fig, ax = plt.subplots(figsize=(10, 15))
-    sns.heatmap(sorted_X, ax=ax)
-    plt.show()
 
 
 
